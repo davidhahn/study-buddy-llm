@@ -1,3 +1,3 @@
-from src.generator.problem import generate_problem
+from src.generator.problem import generate_problem, Topic
 
-print(generate_problem("Binary Search Tree", "medium"))
+print(generate_problem(Topic.BINARY_SEARCH_TREE, "medium"))
