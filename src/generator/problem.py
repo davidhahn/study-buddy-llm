@@ -2,24 +2,13 @@ import os
 from anthropic import Anthropic
 import json
 from dotenv import load_dotenv
-from enum import Enum
-
-class Topic(str, Enum):
-    PRACTICAL_PROBLEMS = "Practical Problems"
-    BINARY_SEARCH_TREE = "Binary Search Tree"
-    TREES = "Trees"
-    TRIES = "Tries"
-    GRAPHS = "Graphs"
-    ARRAYS = "Arrays"
-    STRINGS = "Strings"
-
+from src.types import Topic, QuestionResponse, Difficulty
 
 load_dotenv()
-client = Anthropic(
-    api_key=os.environ.get("ANTHROPIC_API_KEY")
-)
+client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-def generate_problem(topic: Topic, difficulty: str) -> dict:
+
+def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:
     prompt = f"""Generate a software engineering interview practice problem for the following:
     - Topic: {topic}
     - Difficulty: {difficulty}
@@ -44,15 +33,16 @@ def generate_problem(topic: Topic, difficulty: str) -> dict:
 
     message = client.messages.create(
         max_tokens=1024,
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        model="claude-sonnet-4-20250514"
+        messages=[{"role": "user", "content": prompt}],
+        model="claude-sonnet-4-20250514",
     )
 
     response_text = message.content[0].text
-    cleaned = response_text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    cleaned = (
+        response_text.strip()
+        .removeprefix("```json")
+        .removeprefix("```")
+        .removesuffix("```")
+        .strip()
+    )
     return json.loads(cleaned)

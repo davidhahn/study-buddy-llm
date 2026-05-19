@@ -1,23 +1,4 @@
-from typing import TypedDict
-from enum import Enum
-
-
-class ExerciseType(str, Enum):
-    ALGORITHM = "algorithm"
-    UI_COMPONENT = "ui_component"
-    ASYNC = "async"
-
-
-class Language(str, Enum):
-    JAVASCRIPT = "javascript"
-    PYTHON = "python"
-
-
-class Criterion(TypedDict):
-    label: str
-    points: int
-    description: str
-
+from src.types import ExerciseType, Language, Criterion
 
 BASE_RUBRIC: list[Criterion] = [
     {
