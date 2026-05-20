@@ -16,12 +16,12 @@ def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:
 
     Return only a JSON object with exactly these keys:
     {{
-      "topic": "{topic}",
-      "difficulty": "{difficulty}",
-      "prompt": "...",
-      "constraints": [],
-      "examples": [],
-      "setup_code": "..."
+        "topic": "{topic}",
+        "difficulty": "{difficulty}",
+        "prompt": "...",
+        "constraints": [],
+        "examples": [],
+        "setup_code": "..."
     }}
 
     prompt: clear explanation of the problem
