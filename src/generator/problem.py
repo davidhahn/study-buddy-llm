@@ -3,9 +3,14 @@ from anthropic import Anthropic
 import json
 from dotenv import load_dotenv
 from src.types import Topic, QuestionResponse, Difficulty
+import httpx
 
 load_dotenv()
-client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+client = Anthropic(
+    api_key=os.environ.get("ANTHROPIC_API_KEY"),
+    timeout=30.0,
+    http_client=httpx.Client(limits=httpx.Limits(max_keepalive_connections=0)),
+)
 
 
 def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:

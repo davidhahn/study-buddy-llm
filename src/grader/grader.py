@@ -5,6 +5,7 @@ import os
 from anthropic import Anthropic
 import json
 from dotenv import load_dotenv
+import httpx
 
 
 class Framing(str, Enum):
@@ -31,7 +32,11 @@ class CriterionEvaluationResponse(ClaudeEvaluationResponse):
 
 
 load_dotenv()
-client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+client = Anthropic(
+    api_key=os.environ.get("ANTHROPIC_API_KEY"),
+    timeout=30.0,
+    http_client=httpx.Client(limits=httpx.Limits(max_keepalive_connections=0)),
+)
 
 
 def grade_solution(
@@ -39,6 +44,8 @@ def grade_solution(
 ) -> CriterionEvaluationResponse:
     strength_prompt = build_judge_prompt(question, answer, rubric, Framing["STRENGTH"])
     gaps_prompt = build_judge_prompt(question, answer, rubric, Framing["GAPS"])
+
+    print(f"Prompt length: {len(strength_prompt)} characters")
 
     strength_message = client.messages.create(
         max_tokens=4096,
