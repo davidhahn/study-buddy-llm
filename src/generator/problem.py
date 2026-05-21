@@ -1,16 +1,6 @@
-import os
-from anthropic import Anthropic
 import json
-from dotenv import load_dotenv
 from src.types import Topic, QuestionResponse, Difficulty
-import httpx
-
-load_dotenv()
-client = Anthropic(
-    api_key=os.environ.get("ANTHROPIC_API_KEY"),
-    timeout=30.0,
-    http_client=httpx.Client(limits=httpx.Limits(max_keepalive_connections=0)),
-)
+from src.client import anthropic_client
 
 
 def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:
@@ -36,7 +26,7 @@ def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:
     Do not wrap the response in markdown code blocks. Return raw JSON only.
     """
 
-    message = client.messages.create(
+    message = anthropic_client.messages.create(
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
         model="claude-sonnet-4-20250514",

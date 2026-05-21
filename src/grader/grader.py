@@ -1,11 +1,8 @@
 from typing import TypedDict
 from enum import Enum
 from src.types import Criterion, QuestionResponse
-import os
-from anthropic import Anthropic
+from src.client import anthropic_client
 import json
-from dotenv import load_dotenv
-import httpx
 
 
 class Framing(str, Enum):
@@ -31,14 +28,6 @@ class CriterionEvaluationResponse(ClaudeEvaluationResponse):
     is_uncertain: bool
 
 
-load_dotenv()
-client = Anthropic(
-    api_key=os.environ.get("ANTHROPIC_API_KEY"),
-    timeout=30.0,
-    http_client=httpx.Client(limits=httpx.Limits(max_keepalive_connections=0)),
-)
-
-
 def grade_solution(
     question: QuestionResponse, answer: str, rubric: list[Criterion]
 ) -> CriterionEvaluationResponse:
@@ -47,7 +36,7 @@ def grade_solution(
 
     print(f"Prompt length: {len(strength_prompt)} characters")
 
-    strength_message = client.messages.create(
+    strength_message = anthropic_client.messages.create(
         max_tokens=4096,
         messages=[{"role": "user", "content": strength_prompt}],
         model="claude-sonnet-4-20250514",
@@ -62,7 +51,7 @@ def grade_solution(
     )
     strength_json = json.loads(strength_cleaned)
 
-    gaps_message = client.messages.create(
+    gaps_message = anthropic_client.messages.create(
         max_tokens=4096,
         messages=[{"role": "user", "content": gaps_prompt}],
         model="claude-sonnet-4-20250514",
