@@ -29,7 +29,7 @@ def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:
     message = anthropic_client.messages.create(
         max_tokens=1024,
         messages=[{"role": "user", "content": prompt}],
-        model="claude-sonnet-4-20250514",
+        model="claude-opus-4-6",
     )
 
     response_text = message.content[0].text

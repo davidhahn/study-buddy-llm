@@ -39,7 +39,7 @@ def grade_solution(
     strength_message = anthropic_client.messages.create(
         max_tokens=4096,
         messages=[{"role": "user", "content": strength_prompt}],
-        model="claude-sonnet-4-20250514",
+        model="claude-opus-4-6",
     )
     strength_response_text = strength_message.content[0].text
     strength_cleaned = (
@@ -54,7 +54,7 @@ def grade_solution(
     gaps_message = anthropic_client.messages.create(
         max_tokens=4096,
         messages=[{"role": "user", "content": gaps_prompt}],
-        model="claude-sonnet-4-20250514",
+        model="claude-opus-4-6",
     )
     gaps_response_text = gaps_message.content[0].text
     gaps_cleaned = (

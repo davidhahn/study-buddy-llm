@@ -4,7 +4,7 @@ BASE_RUBRIC: list[Criterion] = [
     {
         "label": "Correct output",
         "points": 3,
-        "description": "Produces the right result for the primary use case described in the problem.",
+        "description": "Produces the right result for the primary use case described in the problem. Before flagging a logical error, construct a concrete input example that demonstrates the failure. If you cannot construct a specific failing input, do not flag it as a logical error.",
     },
     {
         "label": "Edge cases handled",
@@ -48,7 +48,7 @@ EXERCISE_RUBRICS: dict[ExerciseType, list[Criterion]] = {
         {
             "label": "Correct time complexity",
             "points": 2,
-            "description": "Solution achieves the expected Big-O time complexity. Flag only if a significantly better complexity class is straightforward.",
+            "description": "O(2n) and O(n) are the same complexity class. Constants are dropped in Big-O notation. Only flag if the complexity class itself differs (e.g. O(n^2) vs O(n)).",
         },
         {
             "label": "Correct space complexity",
