@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, Literal, NotRequired
 from enum import Enum
 
 
@@ -27,9 +27,12 @@ class ExampleResponse(TypedDict):
 
 
 class Criterion(TypedDict):
+    id: str
     label: str
     points: int
     description: str
+    evaluation_type: Literal["independent", "cascading"]
+    evaluation_dependency: NotRequired[str]
 
 
 class Topic(str, Enum):
