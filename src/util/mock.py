@@ -26,13 +26,13 @@ function trySubtrees(tree, desiredSubtreeSum) {{
   const [leftSum, leftCanBeSplit] = trySubtrees(tree.left, desiredSubtreeSum);
   const [rightSum, rightCanBeSplit] = trySubtrees(tree.right, desiredSubtreeSum);
 
-  const currentTreeSum = tree.value + leftSum + rightSum;
+  const currentTreeSum = leftSum + rightSum;
   const canBeSplit = leftCanBeSplit || rightCanBeSplit || currentTreeSum === desiredSubtreeSum;
   return [currentTreeSum, canBeSplit];
 }}
 
 function getTreeSum(tree) {{
   if (tree === null) return 0;
-  return tree.value + getTreeSum(tree.left) + getTreeSum(tree.right);
+  return getTreeSum(tree.left) + getTreeSum(tree.right);
 }}
 """

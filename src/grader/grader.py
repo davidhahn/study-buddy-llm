@@ -57,6 +57,8 @@ def grade_solution(
         model="claude-opus-4-6",
     )
     gaps_response_text = gaps_message.content[0].text
+    print("gaps_response_text")
+    print(gaps_response_text)
     gaps_cleaned = (
         gaps_response_text.strip()
         .removeprefix("```json")
@@ -111,7 +113,12 @@ def grade_solution(
 
 def format_rubric(rubric: list[Criterion]) -> str:
     return "\n".join(
-        f"{i + 1}. {criterion["label"]} ({criterion["points"]} pt): {criterion["description"]}"
+        f"{i + 1}. [{criterion['id']}] {criterion['label']} ({criterion['points']} pt): {criterion['description']}"
+        + (
+            f" Depends on criterion: '{criterion['evaluation_dependency']}'."
+            if criterion.get("evaluation_dependency")
+            else ""
+        )
         for i, criterion in enumerate(rubric)
     )
 
@@ -142,7 +149,7 @@ Do not be lenient. Do not reward effort or length. Evaluate only what is stated 
 ## Instructions
 1. For each rubric criterion, reason through whether the learner's answer satisfies it.
 2. Assign points: full points if satisfied, 0 if not. No partial credit unless the criterion explicitly allows it.
-3. Return your response as a JSON object in exactly this format, with no other text:
+3. Do not output any text before or after the JSON object. All reasoning must be inside the reasoning field of each criterion. Return your response as the following JSON object in exactly this format, with no other text:
 
 {{
     "criteria": [
