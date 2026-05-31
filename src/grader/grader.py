@@ -1,6 +1,10 @@
 from typing import TypedDict
 from enum import Enum
-from src.types import Criterion, QuestionResponse
+from src.types import (
+    Criterion,
+    QuestionResponse,
+    CriterionEvaluationResponse,
+)
 from src.client import anthropic_client
 import json
 
@@ -8,24 +12,6 @@ import json
 class Framing(str, Enum):
     STRENGTH = "strength"
     GAPS = "gaps"
-
-
-class EvaluatedCriterion(TypedDict):
-    label: str
-    is_satisfied: bool
-    points_awarded: int
-    reasoning: str
-
-
-class ClaudeEvaluationResponse(TypedDict):
-    criteria: list[EvaluatedCriterion]
-    total_score: float
-    max_score: int
-    summary: str
-
-
-class CriterionEvaluationResponse(ClaudeEvaluationResponse):
-    is_uncertain: bool
 
 
 def grade_solution(

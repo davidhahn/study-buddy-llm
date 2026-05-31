@@ -52,3 +52,21 @@ class QuestionResponse(TypedDict):
     constraints: list[str]
     examples: list[ExampleResponse]
     setup_code: str | None
+
+
+class EvaluatedCriterion(TypedDict):
+    label: str
+    is_satisfied: bool
+    points_awarded: int
+    reasoning: str
+
+
+class ClaudeEvaluationResponse(TypedDict):
+    criteria: list[EvaluatedCriterion]
+    total_score: float
+    max_score: int
+    summary: str
+
+
+class CriterionEvaluationResponse(ClaudeEvaluationResponse):
+    is_uncertain: bool
