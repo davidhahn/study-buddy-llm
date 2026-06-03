@@ -1,6 +1,8 @@
 binary_tree_problem = {
-    "topic": "Topic.BINARY_TREE",
-    "difficulty": "Difficulty.MEDIUM",
+    "topic": "Binary Tree",
+    "difficulty": "Medium",
+    "language": "JavaScript",
+    "exercise_type": "algorithm",
     "prompt": "Write a function that takes in a Binary Tree with at least one node and checks if that Binary Tree can be split into two Binary Trees of equal sum by removing a single edge. If this split is possible, return the new sum of each Binary Tree, otherwise return 0. Note that you do not need to return the edge that was removed. \n The sum of a Binary Tree is the sum of all values in that Binary Tree.Each BinaryTree node has an integer value, a left child node, and a right child node. Children nodes can either be BinaryTree nodes themselves or None / null.",
     "constraints": [],
     "examples": [

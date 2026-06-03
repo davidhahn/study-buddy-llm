@@ -3,6 +3,7 @@ from src.grader.rubric import build_rubric, ExerciseType, Language
 from src.types import Difficulty, QuestionResponse
 from src.grader.grader import grade_solution
 from src.util.mock import binary_tree_problem, binary_tree_answer
+from src.tracker.tracker import log_session
 from typing import cast
 import time
 
@@ -21,3 +22,5 @@ print("-----------------")
 answer = binary_tree_answer
 graded_solution = grade_solution(problem, answer, rubric)
 print(graded_solution)
+
+log_session(problem, answer, rubric, graded_solution)

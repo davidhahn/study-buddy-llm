@@ -16,10 +16,10 @@ def generate_problem(
 
     Return only a JSON object with exactly these keys:
     {{
-        "topic": "{topic}",
-        "difficulty": "{difficulty}",
-        "exercise_type": "{exercise_type}",
-        "language": "{language}",
+        "topic": "{topic.value}",
+        "difficulty": "{difficulty.value}",
+        "exercise_type": "{exercise_type.value}",
+        "language": "{language.value}",
         "prompt": "...",
         "constraints": [],
         "examples": [],
