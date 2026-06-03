@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     max_score INTEGER NOT NULL,
     is_uncertain BOOLEAN NOT NULL,
     summary TEXT NOT NULL,
+    answer TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
