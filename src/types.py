@@ -57,6 +57,7 @@ class QuestionResponse(TypedDict):
 
 
 class EvaluatedCriterion(TypedDict):
+    id: str
     label: str
     is_satisfied: bool
     points_awarded: int

@@ -74,6 +74,7 @@ def grade_solution(
 
         result["criteria"].append(
             {
+                "id": gaps_criterion["id"],
                 "label": gaps_criterion["label"],
                 "is_satisfied": is_satisfied,
                 "points_awarded": round((strengths_score + gaps_score) / 2),
@@ -133,13 +134,20 @@ Do not be lenient. Do not reward effort or length. Evaluate only what is stated 
 {format_rubric(rubric)}
 
 ## Instructions
-1. For each rubric criterion, reason through whether the learner's answer satisfies it.
-2. Assign points: full points if satisfied, 0 if not. No partial credit unless the criterion explicitly allows it.
-3. Do not output any text before or after the JSON object. All reasoning must be inside the reasoning field of each criterion. Return your response as the following JSON object in exactly this format, with no other text:
+1. Do not output any text before or after the JSON object. All reasoning must be inside the reasoning field of each criterion.
+2. For each rubric criterion, reason through whether the learner's answer satisfies it.
+3. The "id" field must exactly match the criterion id from the rubric as shown in brackets e.g. [correct_output]
+4. The "label" field must exactly match the label from the rubric
+5. The "is_satisfied" field must be true only if the criterion is fully met, false otherwise. For criteria that depend on another criterion (cascading), if the dependency failed, it must be false regardless of the solution quality.
+6. The "points_awarded" field must have full points if satisfied, 0 if not. No partial credit unless the criterion explicitly allows it.
+7. The "reasoning" field must give a short concise reason for why it was given for the evaluation
+8. The "total_score" field must add up "points_awarded" from the criteria.
+9. The "summary" field should provide one or two sentence plain-language summary for the learner.
+10. Return your response as the following JSON object in exactly this format, with no other text:
 
 {{
     "criteria": [
-        {{ "label": "...", "is_satisfied": true, "points_awarded": 1, "reasoning": "..." }}
+        {{ "id": "criterion_id_from_rubric", "label": "...", "is_satisfied": true, "points_awarded": 1, "reasoning": "..." }}
     ],
     "total_score": 0,
     "max_score": {calculate_max_score(rubric)},
