@@ -48,6 +48,8 @@ class Topic(str, Enum):
 class QuestionResponse(TypedDict):
     topic: Topic
     difficulty: Difficulty
+    exercise_type: ExerciseType
+    language: Language
     prompt: str
     constraints: list[str]
     examples: list[ExampleResponse]

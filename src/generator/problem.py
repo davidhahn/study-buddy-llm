@@ -1,10 +1,15 @@
 import json
-from src.types import Topic, QuestionResponse, Difficulty
+from src.types import Topic, QuestionResponse, Difficulty, ExerciseType, Language
 from src.client import anthropic_client
 
 
-def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:
-    prompt = f"""Generate a software engineering interview practice problem for the following:
+def generate_problem(
+    exercise_type: ExerciseType,
+    language: Language,
+    topic: Topic,
+    difficulty: Difficulty,
+) -> QuestionResponse:
+    prompt = f"""Generate a {exercise_type} software engineering interview practice problem for the following in {language}:
     - Topic: {topic}
     - Difficulty: {difficulty}
     Focus on problems commonly asked in technical interviews at mid-size to large tech companies.
@@ -13,6 +18,8 @@ def generate_problem(topic: Topic, difficulty: Difficulty) -> QuestionResponse:
     {{
         "topic": "{topic}",
         "difficulty": "{difficulty}",
+        "exercise_type": "{exercise_type}",
+        "language": "{language}",
         "prompt": "...",
         "constraints": [],
         "examples": [],
