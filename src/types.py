@@ -1,4 +1,5 @@
 from typing import TypedDict, Literal, NotRequired
+import datetime
 from enum import Enum
 
 
@@ -56,6 +57,11 @@ class QuestionResponse(TypedDict):
     setup_code: str | None
 
 
+class GeneratedProblem(TypedDict):
+    question: QuestionResponse
+    problem_id: int
+
+
 class EvaluatedCriterion(TypedDict):
     id: str
     label: str
@@ -73,3 +79,20 @@ class ClaudeEvaluationResponse(TypedDict):
 
 class CriterionEvaluationResponse(ClaudeEvaluationResponse):
     is_uncertain: bool
+
+
+class ProblemRow(TypedDict):
+    id: int
+    topic: str
+    difficulty: Difficulty
+    exercise_type: ExerciseType
+    language: Language
+    prompt: str
+    constraints: str
+    examples: str
+    setup_code: str | None
+    interval: int | None
+    ease_factor: float | None
+    repetitions: int | None
+    next_review_date: datetime.datetime | None
+    created_at: datetime.datetime
