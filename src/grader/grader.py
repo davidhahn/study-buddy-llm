@@ -7,6 +7,7 @@ from src.types import (
 )
 from src.client import anthropic_client
 import json
+import math
 
 
 class SM2Score(TypedDict):
@@ -160,6 +161,19 @@ Do not be lenient. Do not reward effort or length. Evaluate only what is stated 
     "max_score": {calculate_max_score(rubric)},
     "summary": "One or two sentence plain-language summary for the learner."
 }}"""
+
+
+def calculate_initial_sm2_score(
+    is_correct: bool, is_uncertain: bool, total_score: int, max_score: int
+) -> int:
+    sm2_score = math.floor(total_score / max_score * 2)
+    if is_correct:
+        sm2_score += 3
+
+    if is_uncertain and sm2_score > 0:
+        sm2_score -= 1
+
+    return sm2_score
 
 
 def calculate_sm2_score(sm2_score_props: SM2Score) -> SM2Score:
