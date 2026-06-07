@@ -12,10 +12,6 @@ def log_session(
     rubric: list[Criterion],
     evaluation_response: CriterionEvaluationResponse,
 ) -> int:
-    """
-    takes in question, answer, and the evaluation_response and create DB rows
-    the return response is the session id that was created
-    """
     db_path = os.environ.get("DB_PATH", "")
     connection = sqlite3.connect(db_path)
     cursor = connection.execute(

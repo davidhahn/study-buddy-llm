@@ -9,6 +9,13 @@ from src.client import anthropic_client
 import json
 
 
+class SM2Score(TypedDict):
+    interval: int
+    ease_factor: float
+    repetitions: int
+    sm2_score: int
+
+
 class Framing(str, Enum):
     STRENGTH = "strength"
     GAPS = "gaps"
@@ -153,3 +160,48 @@ Do not be lenient. Do not reward effort or length. Evaluate only what is stated 
     "max_score": {calculate_max_score(rubric)},
     "summary": "One or two sentence plain-language summary for the learner."
 }}"""
+
+
+def calculate_sm2_score(sm2_score_props: SM2Score) -> SM2Score:
+    """
+    if sm2_score is < 3 (i.e. failed)
+        - repetitions resets to 0
+        - interval resets to 1
+        - ease_factor decreases
+
+    if sm2_score is >= 3
+        - repetitions increments by 1
+        - interval is calculated based on repetitions
+            - first review (repetitions = 1) -> interval = 1
+            - second review (repetitions = 2) -> interval = 6
+            - after that -> previous interval * ease_factor
+        - ease_factor adjusts based on score -> formula: ease_factor + (0.1 - (5 - sm2_score) * 0.08)
+    """
+    sm2_score = sm2_score_props["sm2_score"]
+    ease_factor = sm2_score_props["ease_factor"]
+    repetitions = sm2_score_props["repetitions"]
+    interval = sm2_score_props["interval"]
+
+    if sm2_score < 3:
+        repetitions = 0
+        interval = 1
+
+    else:
+        repetitions += 1
+        if repetitions == 1:
+            interval = 1
+        elif repetitions == 2:
+            interval = 6
+        else:
+            interval = round(interval * ease_factor)
+
+    ease_factor = ease_factor + (0.1 - (5 - sm2_score) * 0.08)
+    if ease_factor <= 1.3:
+        ease_factor = 1.3
+
+    return {
+        "repetitions": repetitions,
+        "interval": interval,
+        "ease_factor": ease_factor,
+        "sm2_score": sm2_score,
+    }
