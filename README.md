@@ -41,8 +41,15 @@ Rubric criteria support `cascading` evaluation dependencies — edge case handli
 ### Phase 3 — Progress Tracking ✅
 SQLite-based session logger. Stores per-session scores, rubric results, and timestamps. Queryable history for identifying patterns in what's being missed.
 
-### Phase 4–6 — Spaced Repetition, Topic Suggestion, Schedule Generation 📋 Planned
-SM-2 algorithm for scheduling problem reviews. Pattern analysis over session history for topic suggestions. Daily schedule generation that combines due reviews, weak topics, and available time.
+### Phase 4 — Spaced Repetition ✅
+SM-2 algorithm implementation for scheduling problem reviews. Introduces a dedicated `problems` table to separate mutable scheduling state from immutable session history — a schema design decision that enforces a clean data modeling boundary.
+
+The session score is converted to SM-2's 0–5 quality scale using `correct_output` as the gate: incorrect solutions always land in the 0–2 (reset) range regardless of rubric performance on other criteria, preventing the compressed scoring that a naive linear mapping produces. The `is_uncertain` flag (set when the two grading passes diverge) decrements the score by 1 to slow scheduling when the grade itself isn't reliable.
+
+SM-2 calculation is a pure function with no database side effects — fully testable with arbitrary state inputs. `next_review_date` is always calculated from the actual review date, not the original due date.
+
+### Phase 5–6 — Topic Suggestion, Schedule Generation 📋 Planned
+Pattern analysis over session history for topic suggestions. Daily schedule generation that combines due reviews, weak topics, and available time.
 
 ## Eval Design
 
