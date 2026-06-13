@@ -1,6 +1,13 @@
+-- SQLite schema
+CREATE TABLE IF NOT EXISTS topics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS problems (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    topic TEXT NOT NULL,
+    topic_id INTEGER NOT NULL REFERENCES topics(id),
     difficulty TEXT NOT NULL,
     exercise_type TEXT NOT NULL,
     language TEXT NOT NULL,
