@@ -65,10 +65,18 @@ def generate_problem(
         question_response = json.loads(cleaned)
         db_path = os.environ.get("DB_PATH", "")
         with sqlite3.connect(db_path) as connection:
+            connection.row_factory = sqlite3.Row
+            topic_cursor = connection.execute(
+                "SELECT * FROM topics WHERE slug = (?)", (topic.value,)
+            )
+            topic_row = topic_cursor.fetchone()
+
+            if topic_row is None:
+                raise RuntimeError("Failed to fetch topic")
             cursor = connection.execute(
-                "INSERT INTO problems (topic, difficulty, exercise_type, language, prompt, constraints, examples, setup_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO problems (topic_id, difficulty, exercise_type, language, prompt, constraints, examples, setup_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 (
-                    topic.value,
+                    topic_row["id"],
                     difficulty.value,
                     exercise_type.value,
                     language.value,
