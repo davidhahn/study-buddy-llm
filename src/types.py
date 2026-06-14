@@ -96,3 +96,11 @@ class ProblemRow(TypedDict):
     repetitions: int | None
     next_review_date: datetime.datetime | None
     created_at: datetime.datetime
+
+
+class TopicSuggestion(TypedDict):
+    id: int
+    name: str
+    slug: str
+    problems: list[ProblemRow]
+    explanation: str

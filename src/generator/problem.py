@@ -6,13 +6,16 @@ from src.types import (
     ExerciseType,
     Language,
     ProblemRow,
+    TopicSuggestion,
 )
 from src.client import anthropic_client
 from typing import cast
 import os
 import datetime
+from datetime import date
 from dotenv import load_dotenv
 import sqlite3
+import math
 
 load_dotenv()
 
@@ -111,3 +114,54 @@ def get_due_problems(anchor_date: datetime.datetime) -> list[ProblemRow]:
         problems = [cast(ProblemRow, dict(row)) for row in cursor.fetchall()]
 
         return problems
+
+
+def suggest_topics(limit: int = 3) -> list[TopicSuggestion]:
+    if limit <= 0:
+        raise ValueError("Limit must be positive")
+
+    final_list = []
+    db_path = os.environ.get("DB_PATH", "")
+    with sqlite3.connect(db_path) as connection:
+        connection.row_factory = sqlite3.Row
+        signal1_cursor = connection.execute(
+            "SELECT t.id, t.name, t.slug FROM topics t LEFT JOIN problems p ON p.topic_id = t.id WHERE p.id IS NULL"
+        )
+        signal1_topics = [
+            cast(
+                TopicSuggestion,
+                {
+                    **dict(row),
+                    "problems": [],
+                    "explanation": "This topic hasn't been worked on before.",
+                },
+            )
+            for row in signal1_cursor.fetchall()
+        ]
+
+        signal2_cursor = connection.execute(
+            "SELECT t.id, t.name, t.slug, AVG(s.total_score * 1.0 / s.max_score) AS avg_score FROM topics t JOIN problems p ON p.topic_id = t.id JOIN sessions s ON s.problem_id = p.id GROUP BY t.id ORDER BY avg_score ASC"
+        )
+        signal2_topics = []
+        for row in signal2_cursor.fetchall():
+            topic_dict = dict(row)
+            explanation = f"Scored average score of {round(row['avg_score'], 3)}"
+            del topic_dict["avg_score"]
+            topic = cast(
+                TopicSuggestion,
+                {
+                    **topic_dict,
+                    "problems": [],
+                    "explanation": explanation,
+                },
+            )
+            signal2_topics.append(topic)
+
+        for topic in signal2_topics:
+            problem_rows = connection.execute(
+                "SELECT * FROM problems WHERE topic_id = ? AND next_review_date <= ? ORDER BY (julianday(?) - julianday(next_review_date)) DESC LIMIT 2",
+                (topic["id"], date.today(), date.today()),
+            )
+            topic["problems"] = [
+                cast(ProblemRow, dict(row)) for row in problem_rows.fetchall()
+            ]
