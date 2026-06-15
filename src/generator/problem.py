@@ -138,63 +138,52 @@ def suggest_topics(limit: int = 3) -> list[TopicSuggestion]:
             for row in signal1_cursor.fetchall()
         ]
 
-        signal2_cursor = connection.execute(
-            "SELECT t.id, t.name, t.slug, AVG(s.total_score * 1.0 / s.max_score) AS avg_score FROM topics t JOIN problems p ON p.topic_id = t.id JOIN sessions s ON s.problem_id = p.id GROUP BY t.id ORDER BY avg_score ASC"
-        )
         signal2_topics = []
-        for row in signal2_cursor.fetchall():
-            topic_dict = dict(row)
-            explanation = f"Scored average score of {round(row['avg_score'], 3)}"
-            del topic_dict["avg_score"]
-            topic = cast(
-                TopicSuggestion,
-                {
-                    **topic_dict,
-                    "problems": [],
-                    "explanation": explanation,
-                },
-            )
-            signal2_topics.append(topic)
 
-        for topic in signal2_topics:
-            problem_rows = connection.execute(
-                "SELECT * FROM problems WHERE topic_id = ? AND next_review_date <= ? ORDER BY (julianday(?) - julianday(next_review_date)) DESC LIMIT 2",
-                (topic["id"], date.today(), date.today()),
+        if len(signal1_topics) < limit:
+            signal2_cursor = connection.execute(
+                "SELECT t.id, t.name, t.slug, AVG(s.total_score * 1.0 / s.max_score) AS avg_score FROM topics t JOIN problems p ON p.topic_id = t.id JOIN sessions s ON s.problem_id = p.id GROUP BY t.id ORDER BY avg_score ASC"
             )
-            topic["problems"] = [
-                cast(ProblemRow, dict(row)) for row in problem_rows.fetchall()
-            ]
-
-        signal3_cursor = connection.execute(
-            "SELECT t.id, t.name, t.slug, MAX(julianday(?) - julianday(p.next_review_date)) AS max_overdue FROM topics t JOIN problems p ON p.topic_id = t.id WHERE p.next_review_date <= ? GROUP BY t.id ORDER BY max_overdue DESC",
-            (date.today(), date.today()),
-        )
+            signal2_topics = []
+            for row in signal2_cursor.fetchall():
+                topic_dict = dict(row)
+                explanation = f"Scored average score of {round(row['avg_score'], 3)}"
+                del topic_dict["avg_score"]
+                topic = cast(
+                    TopicSuggestion,
+                    {
+                        **topic_dict,
+                        "problems": [],
+                        "explanation": explanation,
+                    },
+                )
+                signal2_topics.append(topic)
+            _update_topics_with_problems(connection, signal2_topics)
 
         signal3_topics = []
-        for row in signal3_cursor.fetchall():
-            topic_dict = dict(row)
-            explanation = (
-                f"Haven't looked at the problem for {round(row['max_overdue'], 2)} days"
-            )
-            del topic_dict["max_overdue"]
-            topic = cast(
-                TopicSuggestion,
-                {
-                    **topic_dict,
-                    "problems": [],
-                    "explanation": explanation,
-                },
-            )
-            signal3_topics.append(topic)
 
-        for topic in signal3_topics:
-            problem_rows = connection.execute(
-                "SELECT * FROM problems WHERE topic_id = ? AND next_review_date <= ? ORDER BY (julianday(?) - julianday(next_review_date)) DESC LIMIT 2",
-                (topic["id"], date.today(), date.today()),
+        if len(signal1_topics) + len(signal2_topics) < limit:
+            signal3_cursor = connection.execute(
+                "SELECT t.id, t.name, t.slug, MAX(julianday(?) - julianday(p.next_review_date)) AS max_overdue FROM topics t JOIN problems p ON p.topic_id = t.id WHERE p.next_review_date <= ? GROUP BY t.id ORDER BY max_overdue DESC",
+                (date.today(), date.today()),
             )
-            topic["problems"] = [
-                cast(ProblemRow, dict(row)) for row in problem_rows.fetchall()
-            ]
+
+            signal3_topics = []
+            for row in signal3_cursor.fetchall():
+                topic_dict = dict(row)
+                explanation = f"Haven't looked at the problem for {round(row['max_overdue'], 2)} days"
+                del topic_dict["max_overdue"]
+                topic = cast(
+                    TopicSuggestion,
+                    {
+                        **topic_dict,
+                        "problems": [],
+                        "explanation": explanation,
+                    },
+                )
+                signal3_topics.append(topic)
+
+            _update_topics_with_problems(connection, signal3_topics)
 
         seen_ids = set()
         result = []
@@ -207,3 +196,16 @@ def suggest_topics(limit: int = 3) -> list[TopicSuggestion]:
                 break
 
         return result
+
+
+def _update_topics_with_problems(
+    connection: sqlite3.Connection, topics: list[TopicSuggestion], limit: int = 2
+):
+    for topic in topics:
+        problem_rows = connection.execute(
+            "SELECT * FROM problems WHERE topic_id = ? AND next_review_date <= ? ORDER BY (julianday(?) - julianday(next_review_date)) DESC LIMIT ?",
+            (topic["id"], date.today(), date.today(), limit),
+        )
+        topic["problems"] = [
+            cast(ProblemRow, dict(row)) for row in problem_rows.fetchall()
+        ]

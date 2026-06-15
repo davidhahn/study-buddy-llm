@@ -48,8 +48,17 @@ The session score is converted to SM-2's 0–5 quality scale using `correct_outp
 
 SM-2 calculation is a pure function with no database side effects — fully testable with arbitrary state inputs. `next_review_date` is always calculated from the actual review date, not the original due date.
 
-### Phase 5–6 — Topic Suggestion, Schedule Generation 📋 Planned
-Pattern analysis over session history for topic suggestions. Daily schedule generation that combines due reviews, weak topics, and available time.
+### Phase 5 — Topic Suggestion ✅
+`suggest_topics(limit=3)` recommends topics to prioritize, each paired with up to 2 concrete problems and an explanation of why it was surfaced. Ranks across three signals in priority order: topics never worked on, topics with the lowest average session score, and topics with the most overdue reviews.
+
+Required a dedicated `topics` table — the prior free-text `problems.topic` column couldn't represent "a topic with zero problems," since there was no row to query against. `generate_problem()` now fails explicitly on an unrecognized topic slug rather than auto-creating a row, surfacing enum/seed-data drift immediately instead of producing topics with no metadata.
+
+Two manual "priority" or "interview frequency" fields were considered and rejected as tiebreakers — same reasoning as the SM-2 fields in Phase 4: they require ongoing manual upkeep and go stale. Where no real differentiating signal exists, an arbitrary tiebreaker (insertion order) is used deliberately rather than masked behind a field that implies more rigor than exists.
+
+`suggest_topics()` stays a pure read function — topics with zero problems return an empty `problems` list rather than triggering inline generation, keeping read and write concerns separable.
+
+### Phase 6 — Schedule Generation 📋 Planned
+Daily schedule generation that combines due reviews, weak topics, and available time.
 
 ## Eval Design
 
