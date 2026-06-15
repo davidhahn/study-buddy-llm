@@ -120,7 +120,6 @@ def suggest_topics(limit: int = 3) -> list[TopicSuggestion]:
     if limit <= 0:
         raise ValueError("Limit must be positive")
 
-    final_list = []
     db_path = os.environ.get("DB_PATH", "")
     with sqlite3.connect(db_path) as connection:
         connection.row_factory = sqlite3.Row
@@ -165,3 +164,46 @@ def suggest_topics(limit: int = 3) -> list[TopicSuggestion]:
             topic["problems"] = [
                 cast(ProblemRow, dict(row)) for row in problem_rows.fetchall()
             ]
+
+        signal3_cursor = connection.execute(
+            "SELECT t.id, t.name, t.slug, MAX(julianday(?) - julianday(p.next_review_date)) AS max_overdue FROM topics t JOIN problems p ON p.topic_id = t.id WHERE p.next_review_date <= ? GROUP BY t.id ORDER BY max_overdue DESC",
+            (date.today(), date.today()),
+        )
+
+        signal3_topics = []
+        for row in signal3_cursor.fetchall():
+            topic_dict = dict(row)
+            explanation = (
+                f"Haven't looked at the problem for {round(row['max_overdue'], 2)} days"
+            )
+            del topic_dict["max_overdue"]
+            topic = cast(
+                TopicSuggestion,
+                {
+                    **topic_dict,
+                    "problems": [],
+                    "explanation": explanation,
+                },
+            )
+            signal3_topics.append(topic)
+
+        for topic in signal3_topics:
+            problem_rows = connection.execute(
+                "SELECT * FROM problems WHERE topic_id = ? AND next_review_date <= ? ORDER BY (julianday(?) - julianday(next_review_date)) DESC LIMIT 2",
+                (topic["id"], date.today(), date.today()),
+            )
+            topic["problems"] = [
+                cast(ProblemRow, dict(row)) for row in problem_rows.fetchall()
+            ]
+
+        seen_ids = set()
+        result = []
+        for topic in [*signal1_topics, *signal2_topics, *signal3_topics]:
+            if topic["id"] in seen_ids:
+                continue
+            seen_ids.add(topic["id"])
+            result.append(topic)
+            if len(result) == limit:
+                break
+
+        return result
